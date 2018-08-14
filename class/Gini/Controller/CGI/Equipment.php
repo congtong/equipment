@@ -2,7 +2,9 @@
 namespace Gini\Controller\CGI;
 
 class Equipment extends \Gini\Controller\REST {
-    
+    /**
+     * 获取
+     */
     public function getDefault($id){
         $response = array(
             'status'=>'success',
