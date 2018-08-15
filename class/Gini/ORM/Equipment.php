@@ -51,13 +51,13 @@ class Equipment extends Object {
         'name','mode_no'
     ];
 
-    public function format(){      
+    public function format(){         
         $data = [
             'id'=>$this->id,
             'name'=>$this->name,
             'en_name'=>$this->en_name,
             'model_no'=>$this->model_no,
-            'location'=>$this->location.($equipment->location1=='' ? '' : ' '.$equipment->location1),
+            'location'=>$this->location.($this->location1=='' ? '' : ' '.$this->location1),
             'contacts'=>$this->contacts,
             'tags'=>$this->tags
         ];
