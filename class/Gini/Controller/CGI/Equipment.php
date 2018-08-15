@@ -6,11 +6,11 @@ class Equipment extends \Gini\Controller\REST {
      * 获取
      */
     public function getDefault($id){
-        $response = array(
+        $response = [
             'status'=>'success',
             'message'=>'',
             'data'=>''
-        );
+        ];
         $form = $this->form('get');
         if($id){
             $equipment = a('equipment',$id);
@@ -27,9 +27,9 @@ class Equipment extends \Gini\Controller\REST {
         }
         
         if ($equipment instanceof \Gini\Those) {
-            $data = array();
+            $data = [];
             foreach($equipment as $item){
-                $data[] = array(
+                $data[] = [
                     'id'=>$item->id,
                     'name'=>$item->name,
                     'en_name'=>$item->en_name,
@@ -37,11 +37,11 @@ class Equipment extends \Gini\Controller\REST {
                     'location'=>$item->location.($item->location1==''?'':' '.$item->location1),
                     'contacts'=>$item->contacts,
                     'tags'=>$item->tags
-                );
+                ];
             }
             $response['data'] = $data;
         }else if ($equipment instanceof \Gini\ORM\Object) {
-            $response['data'] = array(
+            $response['data'] = [
                 'id'=>$equipment->id,
                 'name'=>$equipment->name,
                 'en_name'=>$equipment->en_name,
@@ -49,14 +49,15 @@ class Equipment extends \Gini\Controller\REST {
                 'location'=>$equipment->location.($equipment->location1==''?'':' '.$equipment->location1),
                 'contacts'=>$equipment->contacts,
                 'tags'=>$equipment->tags
-            );
+            ];
         }
         $res = \Gini\IoC::construct('\Gini\CGI\Response\JSON', $response);
         return $res;
     }
     public function postDefault(){
+        //class_exists('\Gini\Those');
         $form = $this->form('post');
-        //var_dump($form);die;
+       // var_dump($form);die;
         $status = 'success';
         $message = '';
         if($form){
@@ -69,10 +70,10 @@ class Equipment extends \Gini\Controller\REST {
             $status = 'errror';
             $message = "no parameter";
         }
-        $response = array(
+        $response = [
             'status'=>$status,
             'message'=>$message
-        );
+        ];
         $res = \Gini\Ioc::construct('\Gini\CGI\Response\JSON',$response);
         return $res;
     }
@@ -95,10 +96,10 @@ class Equipment extends \Gini\Controller\REST {
             $status = 'errror';
             $message = 'id is null';
         }
-        $response = array(
+        $response = [
             'status'=>$status,
             'message'=>$message
-        );
+        ];
         $res = \Gini\Ioc::construct('\Gini\CGI\Response\JSON',$response);
         return $res;
     }
@@ -117,10 +118,10 @@ class Equipment extends \Gini\Controller\REST {
             $message = 'id is null';
         }
 
-        $response = array(
+        $response = [
             'status'=>$status,
             'message'=>$message
-        );
+        ];
 
         $res = \Gini\Ioc::construct('\Gini\CGI\Response\JSON',$response);
         return $res;
@@ -128,7 +129,7 @@ class Equipment extends \Gini\Controller\REST {
 
     private function saveForm($equipment,$form){
         $props = get_class_vars(get_class($equipment));
-        $requireArr = array('name','incharges','contacts');
+        $requireArr = ['name','incharges','contacts'];
         $status = 'error';
         $message = '';
         $bool = true;
@@ -142,7 +143,7 @@ class Equipment extends \Gini\Controller\REST {
         }
         //CERS共享
         if(isset($form['share']) && $form['share'] == 1 ){
-            $cersRequiredArr = array('domain','referchargerule','opencalendar','assetscode','certification','classificationcode','manucertification','manucountrycode','sharelevel');
+            $cersRequiredArr = ['domain','referchargerule','opencalendar','assetscode','certification','classificationcode','manucertification','manucountrycode','sharelevel'];
             foreach($cersRequiredArr as $val) {
                 if(!isset($form[$val]) || $form[$val] == ''){
                     $message = $val." is required";
@@ -163,10 +164,10 @@ class Equipment extends \Gini\Controller\REST {
                 $message = "save error";
             }
         }
-        $response = array(
+        $response = [
             'status'=>$status,
             'message'=>$message
-        );
+        ];
        
         return $response;
     }
