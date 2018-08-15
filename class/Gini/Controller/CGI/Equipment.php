@@ -163,49 +163,4 @@ class Equipment extends Restful {
         output:
         return new Response\JSON($response,$code);
     }
-
-    private function saveForm($equipment,$form){
-        $props = get_class_vars(get_class($equipment));
-        $requireArr = ['name','incharges','contacts'];
-        $status = 'error';
-        $message = '';
-        $bool = true;
-        
-        foreach($requireArr as $v){
-            if(!isset($form[$v]) || $form[$v] == ''){
-                $message = $v." is required";
-                $bool = false;
-                break;
-            }
-        }
-        //CERS共享
-        if(isset($form['share']) && $form['share'] == 1 ){
-            $cersRequiredArr = ['domain','referchargerule','opencalendar','assetscode','certification','classificationcode','manucertification','manucountrycode','sharelevel'];
-            foreach($cersRequiredArr as $val) {
-                if(!isset($form[$val]) || $form[$val] == ''){
-                    $message = $val." is required";
-                    $bool = false;
-                    break;
-                }
-            }
-        }
-        if($bool){
-            foreach ($form as $key => $value) {
-                if (array_key_exists($key, $props)) {
-                    $equipment->{$key} = $value;
-                }
-            }
-            if($equipment->save()){
-                $status = "success";
-            }else{
-                $message = "save error";
-            }
-        }
-        $response = [
-            'status'=>$status,
-            'message'=>$message
-        ];
-       
-        return $response;
-    }
 }
