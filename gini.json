@@ -1,6 +1,7 @@
 {
+    "id": "equipment_server",
     "name": "equpiment_module",
-    "description": "equipment_description",
+    "description": "仪器基本信息管理后台接口",
     "version": "0.1.0",
     "dependencies": {}
 }
