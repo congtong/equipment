@@ -1,174 +1,204 @@
 <?php
+
 namespace Gini\Controller\CGI;
 
-class Equipment extends \Gini\Controller\REST {
+use \Gini\CGI\Response;
+use \Gini\CGI\Validator;
+
+class Equipment extends Restful {
+
     /**
-     * 获取
+     * 获取单个仪器信息
+     * 
+     * @param integer $id 仪器的数据表主键id
+     * @return json 仪器详细信息
      */
-    public function getDefault($id){
-        $response = [
-            'status'=>'success',
-            'message'=>'',
-            'data'=>''
-        ];
+    public function get($id = 0) {
+        $code = 200;
+        $equipment = a('equipment', $id);
+        if(!$equipment->id){
+            $code = 404;
+            $response = '没有找到对应的仪器信息';
+            goto output;
+        }else{
+            $response = $equipment->format();
+        }
+        output:
+        return new Response\JSON($response, $code);
+    }
+    
+    public function fetch() { 
         $form = $this->form('get');
-        if($id){
-            $equipment = a('equipment',$id);
-        }else{
-            $equipment = those('equipment');
-            $name = isset($form['name'])?$form['name']:'';
-            $refNo = isset($form['ref_no'])?$form['ref_no']:'';
-            $equipment->whose('name')->contains($name)->whose('ref_no')->contains($refNo);
-            $response['total'] = $equipment->totalCount();
 
-            if (isset($form['start']) && isset($form['per'])) {
-                $equipment->limit($form['start'], $form['per']);
+        $equipments = those('equipment');
+        $name = isset($form['name']) ? $form['name'] : '';
+        $refNo = isset($form['ref_no']) ? $form['ref_no'] : '';
+        $equipments->whose('name')->contains($name)->whose('ref_no')->contains($refNo);
+
+        if (isset($form['start']) && isset($form['per'])) {
+            $equipments->limit($form['start'], $form['per']);
+        }
+        if (isset($form['group_id']) && $form['group_id'] != '') {
+            $equipments->whose('id')->isIn(
+                those('equipment/tag')->whose('tag')->is(a('tag',(int)$form['group_id']))->get('equipment_id')
+            );
+        }
+        $response['total'] = $equipments->totalCount();
+        if ($response['total']) {
+            foreach ($equipments as $equipment) {
+                $response['data'][] = $equipment->format();
             }
         }
         
-        if ($equipment instanceof \Gini\Those) {
-            $data = [];
-            foreach($equipment as $item){
-                $data[] = [
-                    'id'=>$item->id,
-                    'name'=>$item->name,
-                    'en_name'=>$item->en_name,
-                    'model_no'=>$item->model_no,
-                    'location'=>$item->location.($item->location1==''?'':' '.$item->location1),
-                    'contacts'=>$item->contacts,
-                    'tags'=>$item->tags
-                ];
-            }
-            $response['data'] = $data;
-        }else if ($equipment instanceof \Gini\ORM\Object) {
-            $response['data'] = [
-                'id'=>$equipment->id,
-                'name'=>$equipment->name,
-                'en_name'=>$equipment->en_name,
-                'model_no'=>$equipment->model_no,
-                'location'=>$equipment->location.($equipment->location1==''?'':' '.$equipment->location1),
-                'contacts'=>$equipment->contacts,
-                'tags'=>$equipment->tags
-            ];
-        }
-        $res = \Gini\IoC::construct('\Gini\CGI\Response\JSON', $response);
-        return $res;
+        output:
+        return new Response\JSON($response, $code);
     }
-    public function postDefault(){
-        //class_exists('\Gini\Those');
+    public function post() {
         $form = $this->form('post');
-       // var_dump($form);die;
-        $status = 'success';
-        $message = '';
-        if($form){
+        $validator = new Validator;
+
+        try {
+            $validator = new Validator;
+            $validator->validate('name', !!$form['name'], '仪器名称必填')
+                    ->validate('incharges', !!$form['incharges'], '负责人必填')
+                    ->validate('contacts', !!$form['contacts'], '联系人必填');
+            if(isset($form['share']) && $form['share'] == 1 ){
+                $validator->validate('domain', !!$form['domain'], '仪器名称必填')
+                    ->validate('refer_charge_rule', !!$form['refer_charge_rule'], '负责人必填')
+                    ->validate('open_calendar', !!$form['open_calendar'], '开放时间必填')
+                    ->validate('assets_code', !!$form['assets_code'], '开放时间必填')
+                    ->validate('certification', !!$form['certification'], '开放时间必填')
+                    ->validate('classification_code', !!$form['classification_code'], '开放时间必填')
+                    ->validate('manu_certification', !!$form['manu_certification'], '开放时间必填')
+                    ->validate('manu_country_code', !!$form['manu_country_code'], '开放时间必填')
+                    ->validate('share_level', !!$form['share_level'], '开放时间必填');
+            }
+            $validator->done();
+            
             $equipment = a('equipment');
-            $saveRes = $this->saveForm($equipment,$form);
-            var_dump($saveRes);die;
-            $status = $saveRes['status'];
-            $message = $saveRes['message'];
-        }else{
-            $status = 'errror';
-            $message = "no parameter";
-        }
-        $response = [
-            'status'=>$status,
-            'message'=>$message
-        ];
-        $res = \Gini\Ioc::construct('\Gini\CGI\Response\JSON',$response);
-        return $res;
-    }
-
-    public function putDefault(){
-        $form = $this->form('put');
-        $id = isset($form['id'])?$form['id']:'';
-
-        if($id!=''){
-            if($form){
-                $equipment = a('equipment',$id);
-                $saveRes = $this->saveForm($equipment,$form);
-                $status = $saveRes['status'];
-                $message = $saveRes['message'];
-            }else{
-                $status = 'errror';
-                $message = "no parameter";
-            }
-        }else{        
-            $status = 'errror';
-            $message = 'id is null';
-        }
-        $response = [
-            'status'=>$status,
-            'message'=>$message
-        ];
-        $res = \Gini\Ioc::construct('\Gini\CGI\Response\JSON',$response);
-        return $res;
-    }
-    public function deleteDefault($id){
-        $status = 'success';
-        $message = '';
-        if($id){
-            $equipment = a('equipment',$id);
-            $bool = $equipment->delete();
-            if(!$bool){
-                $status = 'error';
-                $message = 'delete fail';
-            }
-        }else{
-            $status = 'error';
-            $message = 'id is null';
-        }
-
-        $response = [
-            'status'=>$status,
-            'message'=>$message
-        ];
-
-        $res = \Gini\Ioc::construct('\Gini\CGI\Response\JSON',$response);
-        return $res;
-    }
-
-    private function saveForm($equipment,$form){
-        $props = get_class_vars(get_class($equipment));
-        $requireArr = ['name','incharges','contacts'];
-        $status = 'error';
-        $message = '';
-        $bool = true;
-        
-        foreach($requireArr as $v){
-            if(!isset($form[$v]) || $form[$v] == ''){
-                $message = $v." is required";
-                $bool = false;
-                break;
-            }
-        }
-        //CERS共享
-        if(isset($form['share']) && $form['share'] == 1 ){
-            $cersRequiredArr = ['domain','referchargerule','opencalendar','assetscode','certification','classificationcode','manucertification','manucountrycode','sharelevel'];
-            foreach($cersRequiredArr as $val) {
-                if(!isset($form[$val]) || $form[$val] == ''){
-                    $message = $val." is required";
-                    $bool = false;
-                    break;
-                }
-            }
-        }
-        if($bool){
+            $props = get_class_vars(get_class($equipment));
             foreach ($form as $key => $value) {
                 if (array_key_exists($key, $props)) {
                     $equipment->{$key} = $value;
                 }
             }
-            if($equipment->save()){
-                $status = "success";
-            }else{
-                $message = "save error";
+
+            if ($equipment->save()) {
+                $response = $equipment->format();
+                $id = $response['id'];
+                $this->saveEquipmentTag($id,(int)$form['group_id']);
+            } else {
+                $code = 500;
+                $response = "保存失败";
+            }
+        } catch (Validator\Exception $e) {
+            $code = 400;
+            $response = $validator->errors();
+        }
+
+        output:
+        return new Response\JSON($response,$code);
+    }
+
+    public function put($id = 0) {
+        
+        $form = $this->form('put');
+
+        $equipment = a('equipment', $id);
+
+        if (!$equipment->id) {
+            $code = 400;
+            $response = "没有该仪器的信息";
+        } else {
+            try {
+                $validator = new Validator;
+                $validator->validate('name', !!$form['name'], '仪器名称必填')
+                      ->validate('incharges', !!$form['incharges'], '负责人必填')
+                      ->validate('contacts', !!$form['contacts'], '联系人必填');
+                if(isset($form['share']) && $form['share'] == 1 ){
+                    $validator->validate('domain', !!$form['domain'], '仪器名称必填')
+                      ->validate('refer_charge_rule', !!$form['refer_charge_rule'], '负责人必填')
+                      ->validate('open_calendar', !!$form['open_calendar'], '开放时间必填')
+                      ->validate('assets_code', !!$form['assets_code'], '开放时间必填')
+                      ->validate('certification', !!$form['certification'], '开放时间必填')
+                      ->validate('classification_code', !!$form['classification_code'], '开放时间必填')
+                      ->validate('manu_certification', !!$form['manu_certification'], '开放时间必填')
+                      ->validate('manu_country_code', !!$form['manu_country_code'], '开放时间必填')
+                      ->validate('share_level', !!$form['share_level'], '开放时间必填');
+                }
+                $validator->done();
+                
+                $props = get_class_vars(get_class($equipment));
+                foreach ($form as $key => $value) {
+                    if (array_key_exists($key, $props)) {
+                        $equipment->{$key} = $value;
+                    }
+                }
+                if($equipment->save() && $this->saveEquipmentTag($id,(int)$form['group_id'])){
+                    $response = $equipment->format();
+                }else{
+                    $code = 500;
+                    $response = "保存失败";
+                }
+            } catch (Validator\Exception $e) {
+                $code = 400;
+                $response = $validator->errors();
             }
         }
-        $response = [
-            'status'=>$status,
-            'message'=>$message
-        ];
-       
-        return $response;
+
+        output:
+        return new Response\JSON($response, $code);
+    }
+    public function delete($id = 0) {
+        
+        $equipment = a('equipment',$id);
+        
+        if (!$equipment->id) {
+            $code = 400;
+            $response = "不存在该条信息";
+            goto output;
+        } else {
+            $bool = $equipment->delete();
+            if (!$bool || !$this->deleteEquipmentTag($id)) {
+                $code = 500;
+                $response = '删除失败';
+                goto output;
+            } else {
+                $response = true;
+            }
+        }
+
+        output:
+        return new Response\JSON($response,$code);
+    }
+
+    private function deleteEquipmentTag($equipmentId){
+        $db = \Gini\Database::db();
+        $res = $db->query("DELETE FROM equipment_tag WHERE equipment_id = $equipmentId");
+        if ($res) return true;
+        else return false;
+    }
+
+    private function saveEquipmentTag($equipmentId, $tagId){
+        $bool = true;
+        $bool = $this->deleteEquipmentTag($equipmentId);
+        $arr = [];
+        $this->getTag($tagId, $arr);
+        
+        foreach ($arr as $v) {
+            $equipmentTag = a('equipment/tag');
+            $equipmentTag->equipment = a('equipment', $equipmentId);
+            $equipmentTag->tag = a('tag', $v);
+            $bool = $equipmentTag->save();
+        }
+        return $bool;
+    }
+
+    private function getTag($childId, &$arrIds = []){
+        $tag = a('tag',$childId);
+        if ($tag->id) {
+            $arrIds[] = $tag->id;
+            $this->getTag($tag->parent_id,$arrIds);
+        }
     }
 }
