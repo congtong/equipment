@@ -14,7 +14,7 @@ class Equipment extends Object {
     public $manu_date = 'datetime'; //生产日期
     public $purchased_date = 'datetime'; //购置日期
     public $atime  = 'datetime'; //入网日期
-    public $group_id = 'string:100'; //组织结构的id
+    public $group_id = 'object:tag'; //组织结构的id
     public $cat_no = 'string:40'; //分类号
     public $ref_no = 'string:100'; //仪器编号
     public $location = 'string'; //放置地址1
@@ -57,6 +57,7 @@ class Equipment extends Object {
             'name'=>$this->name,
             'en_name'=>$this->en_name,
             'model_no'=>$this->model_no,
+            'tagname'=>$this->tag,
             'location'=>$this->location.($this->location1=='' ? '' : ' '.$this->location1),
             'contacts'=>$this->contacts,
             'tags'=>$this->tags

@@ -34,11 +34,16 @@ class Equipment extends Restful {
         $name = isset($form['name']) ? $form['name'] : '';
         $refNo = isset($form['ref_no']) ? $form['ref_no'] : '';
         $equipments->whose('name')->contains($name)->whose('ref_no')->contains($refNo);
-        $response['total'] = $equipments->totalCount();
 
         if (isset($form['start']) && isset($form['per'])) {
             $equipments->limit($form['start'], $form['per']);
         }
+        if (isset($form['group_id']) && $form['group_id'] != '') {
+            $equipments->whose('id')->isIn(
+                those('equipment/tag')->whose('tag')->is(a('tag',(int)$form['group_id']))->get('equipment_id')
+            );
+        }
+        $response['total'] = $equipments->totalCount();
         if ($response['total']) {
             foreach ($equipments as $equipment) {
                 $response['data'][] = $equipment->format();
@@ -77,9 +82,12 @@ class Equipment extends Restful {
                     $equipment->{$key} = $value;
                 }
             }
-            if($equipment->save()){
+
+            if ($equipment->save()) {
                 $response = $equipment->format();
-            }else{
+                $id = $response['id'];
+                $this->saveEquipmentTag($id,(int)$form['group_id']);
+            } else {
                 $code = 500;
                 $response = "保存失败";
             }
@@ -126,7 +134,7 @@ class Equipment extends Restful {
                         $equipment->{$key} = $value;
                     }
                 }
-                if($equipment->save()){
+                if($equipment->save() && $this->saveEquipmentTag($id,(int)$form['group_id'])){
                     $response = $equipment->format();
                 }else{
                     $code = 500;
@@ -151,7 +159,7 @@ class Equipment extends Restful {
             goto output;
         } else {
             $bool = $equipment->delete();
-            if (!$bool) {
+            if (!$bool || !$this->deleteEquipmentTag($id)) {
                 $code = 500;
                 $response = '删除失败';
                 goto output;
@@ -162,5 +170,35 @@ class Equipment extends Restful {
 
         output:
         return new Response\JSON($response,$code);
+    }
+
+    private function deleteEquipmentTag($equipmentId){
+        $db = \Gini\Database::db();
+        $res = $db->query("DELETE FROM equipment_tag WHERE equipment_id = $equipmentId");
+        if ($res) return true;
+        else return false;
+    }
+
+    private function saveEquipmentTag($equipmentId, $tagId){
+        $bool = true;
+        $bool = $this->deleteEquipmentTag($equipmentId);
+        $arr = [];
+        $this->getTag($tagId, $arr);
+        
+        foreach ($arr as $v) {
+            $equipmentTag = a('equipment/tag');
+            $equipmentTag->equipment = a('equipment', $equipmentId);
+            $equipmentTag->tag = a('tag', $v);
+            $bool = $equipmentTag->save();
+        }
+        return $bool;
+    }
+
+    private function getTag($childId, &$arrIds = []){
+        $tag = a('tag',$childId);
+        if ($tag->id) {
+            $arrIds[] = $tag->id;
+            $this->getTag($tag->parent_id,$arrIds);
+        }
     }
 }
