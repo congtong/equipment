@@ -2,12 +2,12 @@
 
 namespace Gini\ORM\Equipment;
 
-class Tag extends \Gini\ORM\Object {
+class Group extends \Gini\ORM\Object {
 
     public $equipment = 'object:equipment';
-    public $tag = 'object:tag';
+    public $group = 'object:group';
 
     protected static $db_index = [
-        'equipment','tag'
+        'equipment', 'group'
     ];
 }
