@@ -2,10 +2,10 @@
 
 namespace Gini\ORM;
 
-class Tag extends Object {
+class Group extends Object {
 
-    public $name = 'string:100'; //组织架构的名字
-    public $parent_id = 'int'; //父类id
+    public $name = 'string:100'; //组织结构的名字
+    public $parent_id = 'int'; //父id
     public $root_id = 'int'; //根目录id
 
     protected static $db_index = [
