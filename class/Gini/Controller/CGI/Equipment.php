@@ -70,9 +70,9 @@ class Equipment extends Restful {
             $except = ['ctime'];
             $validator = new Validator;
             $validator
-                ->validate('name', !!$form['name'], '仪器名称必填')
-                ->validate('incharges', !!$form['incharges'], '负责人必填')
-                ->validate('contacts', !!$form['contacts'], '联系人必填');
+                ->validate('name', !!$form['name'], T('仪器名称必填'))
+                ->validate('incharges', !!$form['incharges'], T('负责人必填'))
+                ->validate('contacts', !!$form['contacts'], T('联系人必填'));
             if (isset($form['share']) && $form['share'] == 1 ) {
                 $validator
                     ->validate('domain', !!$form['domain'], T('主要测试和研究领域必填'))
