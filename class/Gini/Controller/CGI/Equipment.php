@@ -34,7 +34,6 @@ class Equipment extends Restful {
      */
     public function fetch() { 
         $equipments = those('equipment');
-        $equipments->whose('name')->contains($name)->whose('ref_no')->contains($refNo);
         foreach (['name', 'ref_no', 'location', 'tags', 'location2', 'atime', 'application_code'] as $v) {
             $this->query($equipments, $v);
         }

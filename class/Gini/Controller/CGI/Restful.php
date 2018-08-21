@@ -23,7 +23,7 @@ class Restful extends \Gini\Controller\Rest {
      */
     public function query(\Gini\Those $object, $field) {
         $form = $this->form('get');
-
+        
         if (isset($form[$key])) {
             $value = $form[$key];
             if (is_array($value)) $this->filter($object, $field, $value);
