@@ -68,7 +68,6 @@ class Equipment extends Restful {
 
         try {            
             $except = ['ctime'];
-            $validator = new Validator;
             $validator
                 ->validate('name', !!$form['name'], T('仪器名称必填'))
                 ->validate('incharges', !!$form['incharges'], T('负责人必填'))
@@ -211,7 +210,7 @@ class Equipment extends Restful {
      */
     private function deleteEquipmentGroup($equipmentId) {
         $db = \Gini\Database::db();
-           
+        
         $success = $db->query('DELETE FROM :table1 WHERE :name1=:id1', [
             ':table1' => 'equipment_group',
             ':name1' => 'equipment_id',
