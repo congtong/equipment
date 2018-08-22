@@ -7,6 +7,7 @@ cache/
 vendor/
 reports/
 build/
+web/
 composer.lock
 composer.json
 /raw/config/@*

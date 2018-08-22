@@ -209,12 +209,8 @@ class Equipment extends Restful {
     private function deleteEquipmentGroup($equipmentId) {
         $db = \Gini\Database::db();
         
-        $success = $db->query('DELETE FROM :table1 WHERE :name1=:id1', [
-            ':table1' => 'equipment_group',
-            ':name1' => 'equipment_id',
-        ], [
-            ':id1' => $equipmentId,
-        ]);
+        $success = $db->query('DELETE FROM equipment_group WHERE equipment_id = :equipment_id', [], 
+        ['equipment_id' => $equipmentId]);
 
         return !!$success;
     }
