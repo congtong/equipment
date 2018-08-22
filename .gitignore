@@ -3,12 +3,10 @@
 .*.cache
 .DS_Store
 .env
-/cache/
-/vendor/
-/reports/
-/build/
-/node_modules/
+cache/
+vendor/
+reports/
+build/
 composer.lock
-raw/l10n/template.pot
 composer.json
 /raw/config/@*

@@ -45,6 +45,14 @@ class Restful extends \Gini\Controller\Rest {
         switch ($op) {
             case 'bt':
                 $object->whose($field)->isBetween($array[0], $array[1]);
+            break;
+            case 'in':
+            case 'ni':
+                $object->whose($key)->{$operator}($array);
+                break;
+            default:
+                $object->whose($key)->{$operator}($array[0]);
+                break;
         } 
     }
 

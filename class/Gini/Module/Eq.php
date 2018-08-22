@@ -30,3 +30,4 @@ class Eq {
         }, ['classPrefix' => '\\Gini\\Controller\\CGI\\']);
     }
 }
+

@@ -6,7 +6,6 @@ use \Gini\CGI\Response;
 use \Gini\CGI\Validator;
 
 class Equipment extends Restful {
-
     /**
      * 获取单个仪器信息
      * 
@@ -17,7 +16,7 @@ class Equipment extends Restful {
         $equipment = a('equipment', $id);
         if (!$equipment->id) {
             $code = 404;
-            $response = '没有找到对应的仪器信息';
+            $response = T('没有找到对应的仪器信息');
             goto output;
         } else {
             //格式化返回数据信息
@@ -100,7 +99,7 @@ class Equipment extends Restful {
                 $this->saveEquipmentGroup($id, (int)$form['group_id']);
             } else {
                 $code = 500;
-                $response = "保存失败";
+                $response = T("保存失败");
             }
         } catch (Validator\Exception $e) {
             $code = 400;
@@ -123,10 +122,9 @@ class Equipment extends Restful {
         $form = $this->form('put');
 
         $equipment = a('equipment', $id);
-
         if (!$equipment->id) {
             $code = 400;
-            $response = "没有该仪器的信息";
+            $response = T("没有该仪器的信息");
         } else {
             $except = ['ctime'];
             try {
@@ -163,7 +161,7 @@ class Equipment extends Restful {
                     $response = $equipment->format();
                 } else {
                     $code = 500;
-                    $response = "保存失败";
+                    $response = T("保存失败");
                 }
             } catch (Validator\Exception $e) {
                 $code = 400;
@@ -186,13 +184,13 @@ class Equipment extends Restful {
         
         if (!$equipment->id) {
             $code = 400;
-            $response = "不存在该条信息";
+            $response = T("不存在该条信息");
             goto output;
         } else {
             $bool = $equipment->delete();
             if (!$bool || !$this->deleteEquipmentGroup($id)) {
                 $code = 500;
-                $response = '删除失败';
+                $response = T('删除失败');
                 goto output;
             } else {
                 $response = true;
